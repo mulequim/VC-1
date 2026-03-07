@@ -35,4 +35,4 @@ if st.button("Calcular Limites"):
     else:
         st.error("Erro: Insira uma temperatura entre -40°C e +50°C.")
 
-st.caption("Sistema de verificação para o GTE.")
+st.caption("Sistema de verificação de portas para o VC-1. Software não oficial desenvolvido por 2S MIGUEL.")
