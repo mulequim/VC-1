@@ -34,4 +34,4 @@ if st.button("Calcular Limites"):
     else:
         st.error("Temperatura não encontrada na tabela.")
 
-st.caption("Desenvolvido para uso no GTE.")
+st.caption("Desenvolvido por Miguel - Software ñ Oficial.")
