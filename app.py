@@ -204,6 +204,6 @@ with tab3:
 
 # --- Rodapé ---
 st.divider()
-st.caption("Sistema de verificação de portas para o VC-1.")
+st.caption("Ferramentas de Apoio ao  Comissário do VC-1.")
 st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
 
