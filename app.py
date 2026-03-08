@@ -143,9 +143,12 @@ with tab2:
         col3.metric("Tempo de Chuveiro", f"{dados['tempo_chuveiro']:.1f} min")
 
 # --- Aba 3: Peso nas Galleys ---
-# --- Aba 3: Peso nas Galleys ---
 with tab3:
     st.subheader("Controle de Peso nas Galleys")
+
+    # Inicializa variáveis para evitar NameError
+    peso_dianteira = 0
+    peso_pr = 0
 
     # --- Galley Traseira ---
     st.markdown("### Galley Traseira")
@@ -211,10 +214,10 @@ with tab3:
     
     st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
 
-
     # --- Total ---
     total_galleys = peso_dianteira + peso_pr + peso_traseira
     st.success(f"**Total das Galleys: {total_galleys} kg**")
+
 
 
 
