@@ -3,7 +3,6 @@ import streamlit as st
 # --- MÓDULO DE LÓGICA (Controllers) ---
 
 def calcular_pressao_porta(temp):
-    # Lógica validada da porta VC-1
     if temp >= 40.0: pressao = 1880 + ((int(temp) - 40) * 7)
     elif temp >= 30.0: pressao = 1810 + ((int(temp) - 30) * 7)
     elif temp >= 20.0: pressao = 1740 + ((int(temp) - 20) * 7)
@@ -15,25 +14,16 @@ def calcular_pressao_porta(temp):
     else: pressao = 1395 - ((abs(int(temp)) - 30) * 7)
     return pressao
 
-# --- Lógica de Cálculo Atualizada ---
-def calcular_agua(check01, porc01, check02, porc02):
-    # Regra: Tanque 01 é obrigatório para ter o 02 ativo
-    # Se Tanque 01 desmarcado, tudo vira 0, independente do Tanque 02
-    if not check01:
-        return {"total": 0.0, "porc_total": 0.0, "tempo": 0.0}
-    
-    # Se Tanque 01 está ativo:
-    litros_t1 = 200.0 if check01 and porc01 == 100 else (porc01 * 200 / 100)
-    
-    # Tanque 02 só entra na conta se check02 estiver ativo e o check01 também estiver
-    litros_t2 = (170.0 if check02 and porc02 == 100 else (porc02 * 170 / 100)) if check02 else 0.0
+def calcular_agua(porc01, porc02):
+    # A função agora apenas recebe as porcentagens e calcula direto
+    litros_t1 = (porc01 * 200) / 100
+    litros_t2 = (porc02 * 170) / 100
     
     total = litros_t1 + litros_t2
     porc_total = (total * 100) / 370
     tempo = (total / 42.5) * 5 if total > 0 else 0.0
     
     return {"total": total, "porc_total": porc_total, "tempo": tempo}
-
 
 # --- INTERFACE (Streamlit) ---
 
@@ -47,37 +37,39 @@ with tab1:
     temp = st.number_input("Temperatura (°C):", -40.0, 50.0, 20.0, 0.1)
     if st.button("Calcular Porta"):
         p = calcular_pressao_porta(temp)
-        st.metric("Pressão Ideal", f"{p:.1f} PSI")
-        st.write(f"Faixa: {p*0.95:.1f} a {p*1.05:.1f} PSI")
+        st.metric("Pressão Nominal Calculada", f"{p:.1f} PSI")
+        
+        col1, col2 = st.columns(2)
+        col1.metric("Mínimo (-5%)", f"{p*0.95:.1f} PSI")
+        col2.metric("Máximo (+5%)", f"{p*1.05:.1f} PSI")
 
 with tab2:
     st.subheader("Cálculo de Água Potável")
     
     # Tanque 01
-    check01 = st.checkbox("Tanque 01 Cheio (200L)", True)
-    if not check01:
-        porc01 = st.slider("Porcentagem Tanque 01", 0, 100, 100, key="p1")
+    check01_cheio = st.checkbox("Tanque 01 Cheio (200L)", True)
+    if not check01_cheio:
+        porc01 = st.slider("Porcentagem Tanque 01", 0, 100, 50, key="p1")
     else:
         porc01 = 100
     
-    # Tanque 02 - Só habilita se Tanque 01 estiver ativo
-    if check01:
-        check02 = st.checkbox("Tanque 02 Cheio (170L)", False)
-        if not check02:
-            porc02 = st.slider("Porcentagem Tanque 02", 0, 100, 100, key="p2")
+    # Tanque 02 - Regra: Só libera se o Tanque 01 tiver alguma água
+    if porc01 > 0:
+        check02_cheio = st.checkbox("Tanque 02 Cheio (170L)", False)
+        if not check02_cheio:
+            porc02 = st.slider("Porcentagem Tanque 02", 0, 100, 0, key="p2")
         else:
             porc02 = 100
     else:
-        st.warning("Tanque 01 deve estar ativo.")
-        check02 = False
+        st.warning("O Tanque 01 precisa ter água para habilitar o Tanque 02.")
         porc02 = 0
     
-    # O cálculo aqui abaixo acontece automaticamente a cada mudança
-    res = calcular_agua(check01, porc01, check02, porc02)
+    res = calcular_agua(porc01, porc02)
     
     st.write("---")
     st.metric("Total Água", f"{res['total']:.1f} L")
     st.metric("Nível Global", f"{res['porc_total']:.1f}%")
     st.metric("Tempo de Chuveiro", f"{res['tempo']:.1f} min")
+
 st.markdown("---")
-st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
+st.caption("Sistema de verificação de portas para o VC-1. Software não oficial desenvolvido por 2S MIGUEL.")
