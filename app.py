@@ -162,7 +162,7 @@ with tab3:
     # --- Galley Dianteira ---
     st.markdown("### Galley Dianteira")
     trolleys_dianteira = st.multiselect(
-        "Selecione os Trolleys (máx 2 grandes ou 4 pequenos)",
+        "Selecione os Trolleys (máx 2 espaços)",
         options=list(TROLLEY_PESOS.keys()),
         key="galley_dianteira_trolleys"
     )
@@ -171,14 +171,14 @@ with tab3:
         options=["Nenhum"] + list(FORNO_PESOS.keys()),
         key="galley_dianteira_forno"
     )
-
+    
     # Validação Galley Dianteira
     num_grandes = sum(1 for t in trolleys_dianteira if "Grande" in t)
     num_pequenos = sum(1 for t in trolleys_dianteira if "Pequeno" in t)
-    espacos_usados = num_grandes + (num_pequenos / 2)
+    espacos_usados = num_grandes + (num_pequenos // 2)
     
-    if espacos_usados > 2:
-        st.error("Galley Dianteira suporta no máximo 2 espaços (2 grandes ou 4 pequenos).")
+    if espacos_usados > 2 or (num_pequenos % 2 != 0):
+        st.error("Galley Dianteira suporta no máximo 2 espaços (2 grandes ou 4 pequenos, ou 1 grande + 2 pequenos).")
         peso_dianteira = 0
     else:
         peso_dianteira = calcular_galley_dianteira(
@@ -195,7 +195,7 @@ with tab3:
     # --- Galley Traseira ---
     st.markdown("### Galley Traseira")
     trolleys_traseira = st.multiselect(
-        "Selecione os Trolleys (máx 5 grandes ou 10 pequenos)",
+        "Selecione os Trolleys (máx 5 espaços)",
         options=list(TROLLEY_PESOS.keys()),
         key="galley_traseira_trolleys"
     )
@@ -208,10 +208,10 @@ with tab3:
     # Validação Galley Traseira
     num_grandes_tr = sum(1 for t in trolleys_traseira if "Grande" in t)
     num_pequenos_tr = sum(1 for t in trolleys_traseira if "Pequeno" in t)
-    espacos_usados_tr = num_grandes_tr + (num_pequenos_tr / 2)
+    espacos_usados_tr = num_grandes_tr + (num_pequenos_tr // 2)
     
-    if espacos_usados_tr > 5:
-        st.error("Galley Traseira suporta no máximo 5 espaços (5 grandes ou 10 pequenos).")
+    if espacos_usados_tr > 5 or (num_pequenos_tr % 2 != 0):
+        st.error("Galley Traseira suporta no máximo 5 espaços (5 grandes ou 10 pequenos, ou combinações equivalentes).")
         peso_traseira = 0
     else:
         peso_traseira = calcular_galley_traseira(trolleys_traseira, fornos_traseira)
