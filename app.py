@@ -156,11 +156,10 @@ with tab2:
         col3.metric("Tempo de Chuveiro", f"{dados['tempo_chuveiro']:.1f} min")
 
 # --- Aba 3: Peso nas Galleys ---
-# --- Aba 3: Peso nas Galleys ---
 with tab3:
     st.subheader("Controle de Peso nas Galleys")
 
-    # Galley Dianteira
+    # --- Galley Dianteira ---
     st.markdown("### Galley Dianteira")
     trolleys_dianteira = st.multiselect(
         "Selecione os Trolleys (máx 2 grandes ou 4 pequenos)",
@@ -172,10 +171,20 @@ with tab3:
         options=["Nenhum"] + list(FORNO_PESOS.keys()),
         key="galley_dianteira_forno"
     )
-    peso_dianteira = calcular_galley_dianteira(
-        trolleys_dianteira,
-        forno_dianteira if forno_dianteira != "Nenhum" else None
-    )
+
+    # Validação Galley Dianteira
+    num_grandes = sum(1 for t in trolleys_dianteira if "Grande" in t)
+    num_pequenos = sum(1 for t in trolleys_dianteira if "Pequeno" in t)
+    espacos_usados = num_grandes + (num_pequenos / 2)
+    
+    if espacos_usados > 2:
+        st.error("Galley Dianteira suporta no máximo 2 espaços (2 grandes ou 4 pequenos).")
+        peso_dianteira = 0
+    else:
+        peso_dianteira = calcular_galley_dianteira(
+            trolleys_dianteira,
+            forno_dianteira if forno_dianteira != "Nenhum" else None
+        )
     st.metric("Peso Galley Dianteira", f"{peso_dianteira} kg")
 
     # Galley PR
@@ -183,7 +192,7 @@ with tab3:
     peso_pr = st.number_input("Peso manual (kg)", min_value=0, step=1, key="galley_pr_peso")
     st.metric("Peso Galley PR", f"{peso_pr} kg")
 
-    # Galley Traseira
+    # --- Galley Traseira ---
     st.markdown("### Galley Traseira")
     trolleys_traseira = st.multiselect(
         "Selecione os Trolleys (máx 5 grandes ou 10 pequenos)",
@@ -195,7 +204,17 @@ with tab3:
         options=list(FORNO_PESOS.keys()),
         key="galley_traseira_fornos"
     )
-    peso_traseira = calcular_galley_traseira(trolleys_traseira, fornos_traseira)
+    
+    # Validação Galley Traseira
+    num_grandes_tr = sum(1 for t in trolleys_traseira if "Grande" in t)
+    num_pequenos_tr = sum(1 for t in trolleys_traseira if "Pequeno" in t)
+    espacos_usados_tr = num_grandes_tr + (num_pequenos_tr / 2)
+    
+    if espacos_usados_tr > 5:
+        st.error("Galley Traseira suporta no máximo 5 espaços (5 grandes ou 10 pequenos).")
+        peso_traseira = 0
+    else:
+        peso_traseira = calcular_galley_traseira(trolleys_traseira, fornos_traseira)
     st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
 
     # Total
