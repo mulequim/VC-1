@@ -206,15 +206,28 @@ with tab3:
             peso_traseira += qtd * peso
 
     # Fornos Traseiros como checkboxes
-    st.markdown("#### Fornos Traseiros")
-    FORNOS = [
-        ("Completo com Louça", 15),
-        ("Completo Descartável", 8),
-    ]
-    for nome, peso in FORNOS:
-        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_forno_traseira"):
-            qtd = st.number_input("Qtd", min_value=0, max_value=3, step=1, key=f"qtd_{nome}_forno_traseira")
-            peso_traseira += qtd * peso
+   st.markdown("#### Fornos Traseiros")
+
+    # Inputs separados para cada tipo
+    qtd_forno_15 = st.number_input("Forno Completo com Louça (15kg)", min_value=0, max_value=3, step=1, key="forno_15_traseira")
+    qtd_forno_8 = st.number_input("Forno Completo Descartável (8kg)", min_value=0, max_value=3, step=1, key="forno_8_traseira")
+    
+    # Validação das combinações
+    valido = True
+    if qtd_forno_15 == 3 and qtd_forno_8 > 0:
+        valido = False
+    elif qtd_forno_8 == 3 and qtd_forno_15 > 0:
+        valido = False
+    elif qtd_forno_15 + qtd_forno_8 > 3:
+        valido = False
+    
+    if not valido:
+        st.error("Combinação inválida: máximo 3 fornos, respeitando as regras de exclusividade entre 15kg e 8kg.")
+        peso_fornos_traseira = 0
+    else:
+        peso_fornos_traseira = (qtd_forno_15 * 15) + (qtd_forno_8 * 8)
+    
+    st.metric("Peso Fornos Traseiros", f"{peso_fornos_traseira} kg")
 
     if espacos_traseira > limite_espacos_traseira:
         st.error("Galley Traseira suporta no máximo 5 espaços.")
