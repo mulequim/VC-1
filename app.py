@@ -16,17 +16,25 @@ def calcular_pressao_porta(temp):
     return pressao
 
 def calcular_agua(check01, porc01, check02, porc02):
-    t1 = 100.0 if check01 else float(porc01)
-    t2 = 100.0 if check02 else float(porc02)
+    # Se o check estiver marcado (True), usamos o valor da porcentagem (porc)
+    # Se estiver desmarcado (False), o tanque não existe ou está vazio, logo, 0 litros.
     
-    litros_t1 = (t1 * 200) / 100
-    litros_t2 = (t2 * 170) / 100
+    litros_t1 = (porc01 * 200 / 100) if check01 else 0.0
+    litros_t2 = (porc02 * 170 / 100) if check02 else 0.0
+    
     total = litros_t1 + litros_t2
+    
+    # Capacidade total teórica (370L) serve para a porcentagem do total
+    porc_total = (total * 100) / 370
+    
+    # Tempo de chuveiro baseado no consumo (42.5 L/5min = 8.5 L/min)
+    # Mantendo a sua regra: (total / 42.5) * 5
+    tempo = (total / 42.5) * 5 if total > 0 else 0.0
     
     return {
         "total": total,
-        "porc_total": (total * 100) / 370,
-        "tempo": (total / 42.5) * 5
+        "porc_total": porc_total,
+        "tempo": tempo
     }
 
 # --- INTERFACE (Streamlit) ---
