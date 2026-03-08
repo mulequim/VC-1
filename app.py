@@ -143,42 +143,74 @@ with tab2:
         col3.metric("Tempo de Chuveiro", f"{dados['tempo_chuveiro']:.1f} min")
 
 # --- Aba 3: Peso nas Galleys ---
-# --- Aba 3: Peso nas Galleys ---
 with tab3:
     st.subheader("Controle de Peso nas Galleys")
+
+    # --- Galley Dianteira ---
+    st.markdown("### Galley Dianteira")
+    limite_espacos_dianteira = 2
+    espacos_dianteira = 0
+    peso_dianteira = 0
+
+    TROLLEYS = [
+        ("Grande Vazio", 27, "grande"),
+        ("Grande Louça s/Comissaria", 64, "grande"),
+        ("Grande Louça c/Comissaria", 81, "grande"),
+        ("Grande Descartável c/Comissaria", 60, "grande"),
+        ("Pequeno Vazio", 15, "pequeno"),
+        ("Pequeno Louça c/Comissaria", 44, "pequeno"),
+        ("Pequeno Descartável c/Comissaria", 30, "pequeno"),
+    ]
+
+    for nome, peso, tipo in TROLLEYS:
+        disabled = espacos_dianteira >= limite_espacos_dianteira
+        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_dianteira", disabled=disabled):
+            max_qtd = 2 if tipo == "grande" else 4
+            qtd = st.number_input("Qtd", min_value=0, max_value=max_qtd, step=1, key=f"qtd_{nome}_dianteira")
+            if tipo == "grande":
+                espacos_dianteira += qtd
+            else:
+                espacos_dianteira += qtd / 2
+            peso_dianteira += qtd * peso
+
+    # Fornos dianteiros (mesmo padrão de checkbox + quantidade)
+    st.markdown("#### Fornos Dianteiros")
+    qtd_forno_dianteira_15 = st.number_input("Forno Completo com Louça (15kg)", min_value=0, max_value=1, step=1, key="forno_15_dianteira")
+    qtd_forno_dianteira_8 = st.number_input("Forno Completo Descartável (8kg)", min_value=0, max_value=1, step=1, key="forno_8_dianteira")
+    peso_dianteira += (qtd_forno_dianteira_15 * 15) + (qtd_forno_dianteira_8 * 8)
+
+    if espacos_dianteira > limite_espacos_dianteira:
+        st.error("Galley Dianteira suporta no máximo 2 espaços.")
+        peso_dianteira = 0
+
+    st.metric("Peso Galley Dianteira", f"{peso_dianteira} kg")
+
+    # --- Galley PR ---
+    st.markdown("### Galley PR")
+    peso_pr = st.number_input("Peso manual (kg)", min_value=0, step=1, key="galley_pr_peso")
+    st.metric("Peso Galley PR", f"{peso_pr} kg")
 
     # --- Galley Traseira ---
     st.markdown("### Galley Traseira")
     limite_espacos_traseira = 5
     espacos_traseira = 0
     peso_traseira = 0
-    
-    # Trolleys
-    qtd_grande_vazio = st.number_input("Trolley Grande Vazio (27kg)", min_value=0, max_value=5, step=1)
-    qtd_grande_louca_sc = st.number_input("Trolley Grande com Louça s/Comissaria (64kg)", min_value=0, max_value=5, step=1)
-    qtd_grande_louca_cc = st.number_input("Trolley Grande com Louça c/Comissaria (81kg)", min_value=0, max_value=5, step=1)
-    qtd_grande_desc = st.number_input("Trolley Grande com Material Descartável c/Comissaria (60kg)", min_value=0, max_value=5, step=1)
-    
-    qtd_peq_vazio = st.number_input("Trolley Pequeno Vazio (15kg)", min_value=0, max_value=10, step=1)
-    qtd_peq_louca_cc = st.number_input("Trolley Pequeno com Louça c/Comissaria (44kg)", min_value=0, max_value=10, step=1)
-    qtd_peq_desc = st.number_input("Trolley Pequeno com Material Descartável c/Comissaria (30kg)", min_value=0, max_value=10, step=1)
-    
-    permitir_um_pequeno = st.checkbox("Permitir espaço com apenas 1 trolley pequeno")
-    
-    # Cálculo de espaços
-    num_grandes = qtd_grande_vazio + qtd_grande_louca_sc + qtd_grande_louca_cc + qtd_grande_desc
-    num_pequenos = qtd_peq_vazio + qtd_peq_louca_cc + qtd_peq_desc
-    
-    if permitir_um_pequeno:
-        espacos_traseira = num_grandes + (num_pequenos / 2)
-    else:
-        espacos_traseira = num_grandes + (num_pequenos // 2)
-    
-    # Fornos Traseiros
+
+    for nome, peso, tipo in TROLLEYS:
+        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_traseira"):
+            max_qtd = 5 if tipo == "grande" else 10
+            qtd = st.number_input("Qtd", min_value=0, max_value=max_qtd, step=1, key=f"qtd_{nome}_traseira")
+            if tipo == "grande":
+                espacos_traseira += qtd
+            else:
+                espacos_traseira += qtd / 2
+            peso_traseira += qtd * peso
+
+    # Fornos traseiros com regras de exclusividade
     st.markdown("#### Fornos Traseiros")
     qtd_forno_15 = st.number_input("Forno Completo com Louça (15kg)", min_value=0, max_value=3, step=1, key="forno_15_traseira")
     qtd_forno_8 = st.number_input("Forno Completo Descartável (8kg)", min_value=0, max_value=3, step=1, key="forno_8_traseira")
-    
+
     valido_fornos = True
     if qtd_forno_15 == 3 and qtd_forno_8 > 0:
         valido_fornos = False
@@ -186,35 +218,25 @@ with tab3:
         valido_fornos = False
     elif qtd_forno_15 + qtd_forno_8 > 3:
         valido_fornos = False
-    
+
     if not valido_fornos:
         st.error("Combinação inválida: máximo 3 fornos, respeitando exclusividade entre 15kg e 8kg.")
         peso_fornos_traseira = 0
     else:
         peso_fornos_traseira = (qtd_forno_15 * 15) + (qtd_forno_8 * 8)
-    
-    # Validação final da galley traseira
+
     if espacos_traseira > limite_espacos_traseira:
         st.error("Galley Traseira suporta no máximo 5 espaços.")
         peso_traseira = 0
     else:
-        peso_traseira = (
-            qtd_grande_vazio * 27 +
-            qtd_grande_louca_sc * 64 +
-            qtd_grande_louca_cc * 81 +
-            qtd_grande_desc * 60 +
-            qtd_peq_vazio * 15 +
-            qtd_peq_louca_cc * 44 +
-            qtd_peq_desc * 30 +
-            peso_fornos_traseira
-        )
-    
-    st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
+        peso_traseira += peso_fornos_traseira
 
+    st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
 
     # --- Total ---
     total_galleys = peso_dianteira + peso_pr + peso_traseira
     st.success(f"**Total das Galleys: {total_galleys} kg**")
+
 
 
 
