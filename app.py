@@ -156,6 +156,7 @@ with tab2:
         col3.metric("Tempo de Chuveiro", f"{dados['tempo_chuveiro']:.1f} min")
 
 # --- Aba 3: Peso nas Galleys ---
+# --- Aba 3: Peso nas Galleys ---
 with tab3:
     st.subheader("Controle de Peso nas Galleys")
 
@@ -194,4 +195,15 @@ with tab3:
         options=list(FORNO_PESOS.keys()),
         key="galley_traseira_fornos"
     )
-    peso_traseira = calcular_g
+    peso_traseira = calcular_galley_traseira(trolleys_traseira, fornos_traseira)
+    st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
+
+    # Total
+    total_galleys = peso_dianteira + peso_pr + peso_traseira
+    st.success(f"**Total das Galleys: {total_galleys} kg**")
+
+# --- Rodapé ---
+st.divider()
+st.caption("Sistema de verificação de portas para o VC-1.")
+st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
+
