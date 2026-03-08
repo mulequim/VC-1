@@ -15,27 +15,25 @@ def calcular_pressao_porta(temp):
     else: pressao = 1395 - ((abs(int(temp)) - 30) * 7)
     return pressao
 
+# --- Lógica de Cálculo Atualizada ---
 def calcular_agua(check01, porc01, check02, porc02):
-    # Se o check estiver marcado (True), usamos o valor da porcentagem (porc)
-    # Se estiver desmarcado (False), o tanque não existe ou está vazio, logo, 0 litros.
+    # Regra: Tanque 01 é obrigatório para ter o 02 ativo
+    # Se Tanque 01 desmarcado, tudo vira 0, independente do Tanque 02
+    if not check01:
+        return {"total": 0.0, "porc_total": 0.0, "tempo": 0.0}
     
-    litros_t1 = (porc01 * 200 / 100) if check01 else 0.0
-    litros_t2 = (porc02 * 170 / 100) if check02 else 0.0
+    # Se Tanque 01 está ativo:
+    litros_t1 = 200.0 if check01 and porc01 == 100 else (porc01 * 200 / 100)
+    
+    # Tanque 02 só entra na conta se check02 estiver ativo e o check01 também estiver
+    litros_t2 = (170.0 if check02 and porc02 == 100 else (porc02 * 170 / 100)) if check02 else 0.0
     
     total = litros_t1 + litros_t2
-    
-    # Capacidade total teórica (370L) serve para a porcentagem do total
     porc_total = (total * 100) / 370
-    
-    # Tempo de chuveiro baseado no consumo (42.5 L/5min = 8.5 L/min)
-    # Mantendo a sua regra: (total / 42.5) * 5
     tempo = (total / 42.5) * 5 if total > 0 else 0.0
     
-    return {
-        "total": total,
-        "porc_total": porc_total,
-        "tempo": tempo
-    }
+    return {"total": total, "porc_total": porc_total, "tempo": tempo}
+
 
 # --- INTERFACE (Streamlit) ---
 
@@ -54,18 +52,26 @@ with tab1:
 
 with tab2:
     st.subheader("Cálculo de Água Potável")
-    c1 = st.checkbox("Tanque 01 Cheio", True)
-    p1 = st.slider("Porcentagem T1", 0, 100, 100) if not c1 else 100
     
-    c2 = st.checkbox("Tanque 02 Cheio", False)
-    p2 = st.slider("Porcentagem T2", 0, 100, 0) if not c2 else 100
+    # Tanque 01
+    check01 = st.checkbox("Tanque 01 Cheio (200L)", True)
+    porc01 = st.slider("Porcentagem Tanque 01", 0, 100, 100) if not check01 else 100
     
-    res = calcular_agua(c1, p1, c2, p2)
+    # Tanque 02 - Só habilita se check01 estiver marcado
+    if check01:
+        check02 = st.checkbox("Tanque 02 Cheio (170L)", False)
+        porc02 = st.slider("Porcentagem Tanque 02", 0, 100, 100) if not check02 else 100
+    else:
+        st.warning("Tanque 01 deve estar ativo para gerenciar o Tanque 02.")
+        check02 = False
+        porc02 = 0
+    
+    res = calcular_agua(check01, porc01, check02, porc02)
     
     st.write("---")
     st.metric("Total Água", f"{res['total']:.1f} L")
-    st.metric("Porcentagem Total", f"{res['porc_total']:.1f}%")
-    st.metric("Tempo Chuveiro", f"{res['tempo']:.1f} min")
+    st.metric("Nível Global", f"{res['porc_total']:.1f}%")
+    st.metric("Tempo de Chuveiro", f"{res['tempo']:.1f} min")
 
 st.markdown("---")
 st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
