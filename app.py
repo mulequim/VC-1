@@ -56,18 +56,18 @@ def calcular_agua(t1_pct: int, t2_pct: int) -> dict:
 # =========================
 
 TROLLEY_PESOS = {
-    "Grande Vazio": 27,
-    "Grande Louça s/Comissaria": 64,
-    "Grande Louça c/Comissaria": 81,
-    "Grande Descartável c/Comissaria": 60,
-    "Pequeno Vazio": 15,
-    "Pequeno Louça c/Comissaria": 44,
-    "Pequeno Descartável c/Comissaria": 30,
+    "Grande Vazio 27kg": 27,
+    "Grande Louça s/Comissaria 64kg": 64,
+    "Grande Louça c/Comissaria 81kg": 81,
+    "Grande Descartável c/Comissaria 60kg": 60,
+    "Pequeno Vazio 15kg": 15,
+    "Pequeno Louça c/Comissaria 44kg": 44,
+    "Pequeno Descartável c/Comissaria 30kg": 30,
 }
 
 FORNO_PESOS = {
-    "Completo com Louça": 15,
-    "Completo Descartável": 8,
+    "Completo com Louça 15kg": 15,
+    "Completo Descartável 8kg": 8,
 }
 
 def calcular_galley_dianteira(trolleys, forno):
