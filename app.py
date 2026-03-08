@@ -201,8 +201,23 @@ with tab3:
 
     permitir_um_pequeno = st.checkbox("Permitir espaço com apenas 1 trolley pequeno")
 
-    fornos_traseira = st.multiselect("Selecione os Fornos (até 3)", options=list(FORNO_PESOS.keys()), key="galley_traseira_fornos")
-
+    st.markdown("### Fornos Traseiros")
+    
+    FORNOS = [
+        ("Completo com Louça", 15),
+        ("Completo Descartável", 8),
+    ]
+    
+    peso_fornos_traseira = 0
+    qtd_fornos = {}
+    
+    for nome, peso in FORNOS:
+        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_traseira"):
+            qtd = st.number_input("Qtd", min_value=0, max_value=3, step=1, key=f"qtd_{nome}_traseira")
+            qtd_fornos[nome] = qtd
+            peso_fornos_traseira += qtd * peso
+    
+    st.metric("Peso Fornos Traseiros", f"{peso_fornos_traseira} kg")
     num_grandes = qtd_grande_vazio + qtd_grande_louca_sc + qtd_grande_louca_cc + qtd_grande_desc
     num_pequenos = qtd_peq_vazio + qtd_peq_louca_cc + qtd_peq_desc
 
