@@ -68,13 +68,13 @@ def sync_slider_t2():
 # =========================
 
 st.set_page_config(layout="centered")
-st.title("Sistema Operacional VC-1")
+st.title("Ferramentas Comissários VC-1")
 
-tab1, tab2 = st.tabs(["✈️ Porta VC-1", "💧 Água (QTA)"])
+tab1, tab2 = st.tabs(["✈️ Pressão Porta", "💧 Água (QTA)"])
 
 # --- Aba 1: Porta VC-1 ---
 with tab1:
-    st.subheader("Cálculo de Pressão Nominal")
+    st.subheader("Cálculo de Pressão da Porta VC-1")
     temp = st.number_input("Temperatura ambiente (°C)", -40.0, 50.0, step=0.1)
     if st.button("Calcular Porta"):
         pressao = calcular_pressao(temp)
@@ -121,4 +121,5 @@ with tab2:
 
 # --- Rodapé ---
 st.divider()
-st.caption("Sistema de verificação de portas para o VC-1. Software não oficial desenvolvido por 2S MIGUEL.")
+st.caption("Sistema de verificação de portas para o VC-1.")
+st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
