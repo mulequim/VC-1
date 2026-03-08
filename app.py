@@ -1,7 +1,7 @@
 import streamlit as st
 
 # =========================
-# Funções de Cálculo
+# Funções de Cálculo Porta VC-1
 # =========================
 
 def calcular_pressao(temp: float) -> int:
@@ -30,6 +30,10 @@ def calcular_margens(pressao: int) -> tuple:
     maximo = round(pressao * 1.05)
     return minimo, maximo
 
+# =========================
+# Funções de Cálculo Água QTA
+# =========================
+
 def litros_tanque(porcentagem: int, capacidade: int) -> float:
     return (porcentagem / 100) * capacidade
 
@@ -48,7 +52,39 @@ def calcular_agua(t1_pct: int, t2_pct: int) -> dict:
     }
 
 # =========================
-# Callbacks de Sincronização
+# Funções de Cálculo Galleys
+# =========================
+
+TROLLEY_PESOS = {
+    "Grande Vazio": 27,
+    "Grande Louça s/Comissaria": 64,
+    "Grande Louça c/Comissaria": 81,
+    "Grande Descartável c/Comissaria": 60,
+    "Pequeno Vazio": 15,
+    "Pequeno Louça c/Comissaria": 44,
+    "Pequeno Descartável c/Comissaria": 30,
+}
+
+FORNO_PESOS = {
+    "Completo com Louça": 15,
+    "Completo Descartável": 8,
+}
+
+def calcular_galley_dianteira(trolleys, forno):
+    peso_trolleys = sum(TROLLEY_PESOS[t] for t in trolleys)
+    peso_forno = FORNO_PESOS.get(forno, 0)
+    return peso_trolleys + peso_forno
+
+def calcular_galley_pr(peso_manual):
+    return peso_manual
+
+def calcular_galley_traseira(trolleys, fornos):
+    peso_trolleys = sum(TROLLEY_PESOS[t] for t in trolleys)
+    peso_fornos = sum(FORNO_PESOS[f] for f in fornos)
+    return peso_trolleys + peso_fornos
+
+# =========================
+# Callbacks de Sincronização Água
 # =========================
 
 def sync_checkbox_t1():
@@ -70,7 +106,7 @@ def sync_slider_t2():
 st.set_page_config(layout="centered")
 st.title("Ferramentas Comissários VC-1")
 
-tab1, tab2 = st.tabs(["✈️ Pressão Porta", "💧 Água (QTA)"])
+tab1, tab2, tab3 = st.tabs(["✈️ Pressão Porta", "💧 Água (QTA)", "🍽️ Peso nas Galleys"])
 
 # --- Aba 1: Porta VC-1 ---
 with tab1:
@@ -119,7 +155,43 @@ with tab2:
     if dados["total"] > 0:
         col3.metric("Tempo de Chuveiro", f"{dados['tempo_chuveiro']:.1f} min")
 
-# --- Rodapé ---
-st.divider()
-st.caption("Sistema de verificação de portas para o VC-1.")
-st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
+# --- Aba 3: Peso nas Galleys ---
+with tab3:
+    st.subheader("Controle de Peso nas Galleys")
+
+    # Galley Dianteira
+    st.markdown("### Galley Dianteira")
+    trolleys_dianteira = st.multiselect(
+        "Selecione os Trolleys (máx 2 grandes ou 4 pequenos)",
+        options=list(TROLLEY_PESOS.keys()),
+        key="galley_dianteira_trolleys"
+    )
+    forno_dianteira = st.selectbox(
+        "Forno Dianteira",
+        options=["Nenhum"] + list(FORNO_PESOS.keys()),
+        key="galley_dianteira_forno"
+    )
+    peso_dianteira = calcular_galley_dianteira(
+        trolleys_dianteira,
+        forno_dianteira if forno_dianteira != "Nenhum" else None
+    )
+    st.metric("Peso Galley Dianteira", f"{peso_dianteira} kg")
+
+    # Galley PR
+    st.markdown("### Galley PR")
+    peso_pr = st.number_input("Peso manual (kg)", min_value=0, step=1, key="galley_pr_peso")
+    st.metric("Peso Galley PR", f"{peso_pr} kg")
+
+    # Galley Traseira
+    st.markdown("### Galley Traseira")
+    trolleys_traseira = st.multiselect(
+        "Selecione os Trolleys (máx 5 grandes ou 10 pequenos)",
+        options=list(TROLLEY_PESOS.keys()),
+        key="galley_traseira_trolleys"
+    )
+    fornos_traseira = st.multiselect(
+        "Selecione os Fornos (até 3)",
+        options=list(FORNO_PESOS.keys()),
+        key="galley_traseira_fornos"
+    )
+    peso_traseira = calcular_g
