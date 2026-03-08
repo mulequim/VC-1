@@ -1,59 +1,63 @@
 import streamlit as st
 
-def calcular_pressao_mulequim(temp):
-    # Lógica baseada na sua classe de controle
-    if temp >= 40.0:
-        proporcao = int(temp) - 40
-        pressao = 1880 + (proporcao * 7)
-    elif temp >= 30.0:
-        proporcao = int(temp) - 30
-        pressao = 1810 + (proporcao * 7)
-    elif temp >= 20.0:
-        proporcao = int(temp) - 20
-        pressao = 1740 + (proporcao * 7)
-    elif temp >= 10.0:
-        proporcao = int(temp) - 10
-        pressao = 1660 + (proporcao * 8)
-    elif temp >= 0.0:
-        proporcao = int(temp) - 0
-        pressao = 1610 + (proporcao * 5)
-    elif temp >= -10.0:
-        proporcao = (int(temp) * -1) - 0
-        pressao = 1610 - (proporcao * 7)
-    elif temp >= -20.0:
-        proporcao = (int(temp) * -1) - 10
-        pressao = 1540 - (proporcao * 7.5) # Mantendo o cálculo da sua classe
-    elif temp >= -30.0:
-        proporcao = (int(temp) * -1) - 20
-        pressao = 1465 - (proporcao * 7)
-    else: # -40.0 até -30.0
-        proporcao = (int(temp) * -1) - 30
-        pressao = 1395 - (proporcao * 7)
-        
+# --- MÓDULO DE LÓGICA (Controllers) ---
+
+def calcular_pressao_porta(temp):
+    # Lógica validada da porta VC-1
+    if temp >= 40.0: pressao = 1880 + ((int(temp) - 40) * 7)
+    elif temp >= 30.0: pressao = 1810 + ((int(temp) - 30) * 7)
+    elif temp >= 20.0: pressao = 1740 + ((int(temp) - 20) * 7)
+    elif temp >= 10.0: pressao = 1660 + ((int(temp) - 10) * 8)
+    elif temp >= 0.0: pressao = 1610 + (int(temp) * 5)
+    elif temp >= -10.0: pressao = 1610 - (abs(int(temp)) * 7)
+    elif temp >= -20.0: pressao = 1540 - ((abs(int(temp)) - 10) * 7.5)
+    elif temp >= -30.0: pressao = 1465 - ((abs(int(temp)) - 20) * 7)
+    else: pressao = 1395 - ((abs(int(temp)) - 30) * 7)
     return pressao
 
-st.set_page_config(page_title="Check Porta VC-1", page_icon="✈️")
-st.title("✈️ Check Porta VC-1")
+def calcular_agua(check01, porc01, check02, porc02):
+    t1 = 100.0 if check01 else float(porc01)
+    t2 = 100.0 if check02 else float(porc02)
+    
+    litros_t1 = (t1 * 200) / 100
+    litros_t2 = (t2 * 170) / 100
+    total = litros_t1 + litros_t2
+    
+    return {
+        "total": total,
+        "porc_total": (total * 100) / 370,
+        "tempo": (total / 42.5) * 5
+    }
 
-temp_input = st.number_input("Digite a temperatura (°C):", value=20.0, step=0.1)
+# --- INTERFACE (Streamlit) ---
 
-if st.button("Calcular Limites"):
-    if -40 <= temp_input <= 50:
-        pressao_ideal = calcular_pressao_mulequim(temp_input)
-        
-        # Margem de +- 5%
-        minimo = pressao_ideal * 0.95
-        maximo = pressao_ideal * 1.05
-        
-        st.write("---")
-        st.metric("Pressão Nominal Calculada", f"{pressao_ideal:.1f} PSI")
-        
-        col1, col2 = st.columns(2)
-        col1.metric("Mínimo (-5%)", f"{minimo:.1f} PSI")
-        col2.metric("Máximo (+5%)", f"{maximo:.1f} PSI")
-        
-        st.info(f"Faixa de trabalho: {minimo:.1f} a {maximo:.1f} PSI")
-    else:
-        st.error("Erro: Insira uma temperatura entre -40°C e +50°C.")
+st.set_page_config(page_title="GTE Tools", layout="centered")
+st.title("🧰 Ferramentas GTE")
 
-st.caption("Sistema de verificação de portas para o VC-1. Software não oficial desenvolvido por 2S MIGUEL.")
+tab1, tab2 = st.tabs(["✈️ Porta VC-1", "💧 Água (QTA)"])
+
+with tab1:
+    st.subheader("Verificação de Pressão")
+    temp = st.number_input("Temperatura (°C):", -40.0, 50.0, 20.0, 0.1)
+    if st.button("Calcular Porta"):
+        p = calcular_pressao_porta(temp)
+        st.metric("Pressão Ideal", f"{p:.1f} PSI")
+        st.write(f"Faixa: {p*0.95:.1f} a {p*1.05:.1f} PSI")
+
+with tab2:
+    st.subheader("Cálculo de Água Potável")
+    c1 = st.checkbox("Tanque 01 Cheio", True)
+    p1 = st.slider("Porcentagem T1", 0, 100, 100) if not c1 else 100
+    
+    c2 = st.checkbox("Tanque 02 Cheio", False)
+    p2 = st.slider("Porcentagem T2", 0, 100, 0) if not c2 else 100
+    
+    res = calcular_agua(c1, p1, c2, p2)
+    
+    st.write("---")
+    st.metric("Total Água", f"{res['total']:.1f} L")
+    st.metric("Porcentagem Total", f"{res['porc_total']:.1f}%")
+    st.metric("Tempo Chuveiro", f"{res['tempo']:.1f} min")
+
+st.markdown("---")
+st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
