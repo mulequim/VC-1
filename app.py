@@ -163,5 +163,26 @@ with tab3:
     qtd_pequeno_traseira = st.number_input("Trolleys Pequenos (15-44kg)", min_value=0, max_value=10, step=1, key="galley_traseira_pequeno")
     fornos_traseira = st.multiselect("Selecione os Fornos (até 3)", options=list(FORNO_PESOS.keys()), key="galley_traseira_fornos")
 
+    
     espacos_traseira = qtd_grande_traseira + (qtd_pequeno_traseira // 2)
-    if espacos_traseira > 5
+    if espacos_traseira > 5 or (qtd_pequeno_traseira % 2 != 0):
+        st.error("Galley Traseira suporta no máximo 5 espaços (5 grandes ou 10 pequenos, ou combinações equivalentes).")
+        peso_traseira = 0
+    else:
+        peso_traseira = (
+            qtd_grande_traseira * 64 +   # exemplo: peso médio de grandes
+            qtd_pequeno_traseira * 44 +  # exemplo: peso médio de pequenos
+            sum(FORNO_PESOS[f] for f in fornos_traseira)
+        )
+    
+    st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
+
+    # --- Total ---
+    total_galleys = peso_dianteira + peso_pr + peso_traseira
+    st.success(f"**Total das Galleys: {total_galleys} kg**")
+
+# --- Rodapé ---
+st.divider()
+st.caption("Ferramentas de Apoio ao Comissário do VC-1.")
+st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
+
