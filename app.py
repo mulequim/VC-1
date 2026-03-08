@@ -136,27 +136,37 @@ with tab2:
 with tab3:
     st.subheader("Controle de Peso nas Galleys")
 
-    # --- Galley Dianteira ---
     st.markdown("### Galley Dianteira")
     limite_espacos = 2
-    
-    # Inicialização
     espacos_usados = 0
     peso_dianteira = 0
     
-    # Trolley Grande Louça s/Comissaria
-    if st.checkbox("Grande Louça s/Comissaria (64kg)", key="chk_grande_louca_sc"):
-        qtd = st.number_input("Qtd", min_value=0, max_value=2, step=1, key="qtd_grande_louca_sc")
-        espacos_usados += qtd
-        peso_dianteira += qtd * 64
+    # Lista de trolleys com nome, peso e tipo
+    TROLLEYS = [
+        ("Grande Vazio", 27, "grande"),
+        ("Grande Louça s/Comissaria", 64, "grande"),
+        ("Grande Louça c/Comissaria", 81, "grande"),
+        ("Grande Descartável c/Comissaria", 60, "grande"),
+        ("Pequeno Vazio", 15, "pequeno"),
+        ("Pequeno Louça c/Comissaria", 44, "pequeno"),
+        ("Pequeno Descartável c/Comissaria", 30, "pequeno"),
+    ]
     
-    # Trolley Pequeno Louça c/Comissaria
-    if st.checkbox("Pequeno Louça c/Comissaria (44kg)", key="chk_peq_louca_cc"):
-        qtd = st.number_input("Qtd", min_value=0, max_value=4, step=1, key="qtd_peq_louca_cc")
-        espacos_usados += (qtd // 2)  # cada 2 pequenos = 1 espaço
-        if qtd % 2 != 0 and st.checkbox("Permitir espaço com apenas 1 pequeno", key="chk_um_pequeno_dianteira"):
-            espacos_usados += 0.5
-        peso_dianteira += qtd * 44
+    qtd_trolleys = {}
+    
+    for nome, peso, tipo in TROLLEYS:
+        # Se já atingiu o limite de espaços, não deixa marcar mais nada
+        disabled = espacos_usados >= limite_espacos
+        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_dianteira", disabled=disabled):
+            max_qtd = 2 if tipo == "grande" else 4
+            qtd = st.number_input("Qtd", min_value=0, max_value=max_qtd, step=1, key=f"qtd_{nome}_dianteira")
+            qtd_trolleys[nome] = qtd
+            if tipo == "grande":
+                espacos_usados += qtd
+            else:
+                # cada 2 pequenos = 1 espaço, mas pode permitir 1 sozinho
+                espacos_usados += qtd / 2
+            peso_dianteira += qtd * peso
     
     # Forno
     forno_dianteira = st.selectbox("Forno Dianteira", options=["Nenhum"] + list(FORNO_PESOS.keys()), key="forno_dianteira")
@@ -169,6 +179,7 @@ with tab3:
         peso_dianteira = 0
     
     st.metric("Peso Galley Dianteira", f"{peso_dianteira} kg")
+
 
     # --- Galley PR ---
     st.markdown("### Galley PR")
