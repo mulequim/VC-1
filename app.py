@@ -143,6 +143,7 @@ with tab2:
         col3.metric("Tempo de Chuveiro", f"{dados['tempo_chuveiro']:.1f} min")
 
 # --- Aba 3: Peso nas Galleys ---
+# --- Aba 3: Peso nas Galleys ---
 with tab3:
     st.subheader("Controle de Peso nas Galleys")
 
@@ -190,62 +191,41 @@ with tab3:
 
     # --- Galley Traseira ---
     st.markdown("### Galley Traseira")
-    qtd_grande_vazio = st.number_input("Trolley Grande Vazio (27kg)", min_value=0, max_value=5, step=1)
-    qtd_grande_louca_sc = st.number_input("Trolley Grande com Louça s/Comissaria (64kg)", min_value=0, max_value=5, step=1)
-    qtd_grande_louca_cc = st.number_input("Trolley Grande com Louça c/Comissaria (81kg)", min_value=0, max_value=5, step=1)
-    qtd_grande_desc = st.number_input("Trolley Grande com Material Descartável c/Comissaria (60kg)", min_value=0, max_value=5, step=1)
+    limite_espacos_traseira = 5
+    espacos_traseira = 0
+    peso_traseira = 0
 
-    qtd_peq_vazio = st.number_input("Trolley Pequeno Vazio (15kg)", min_value=0, max_value=10, step=1)
-    qtd_peq_louca_cc = st.number_input("Trolley Pequeno com Louça c/Comissaria (44kg)", min_value=0, max_value=10, step=1)
-    qtd_peq_desc = st.number_input("Trolley Pequeno com Material Descartável c/Comissaria (30kg)", min_value=0, max_value=10, step=1)
+    for nome, peso, tipo in TROLLEYS:
+        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_traseira"):
+            max_qtd = 5 if tipo == "grande" else 10
+            qtd = st.number_input("Qtd", min_value=0, max_value=max_qtd, step=1, key=f"qtd_{nome}_traseira")
+            if tipo == "grande":
+                espacos_traseira += qtd
+            else:
+                espacos_traseira += qtd / 2
+            peso_traseira += qtd * peso
 
-    permitir_um_pequeno = st.checkbox("Permitir espaço com apenas 1 trolley pequeno")
-
-    st.markdown("### Fornos Traseiros")
-    
+    # Fornos Traseiros como checkboxes
+    st.markdown("#### Fornos Traseiros")
     FORNOS = [
         ("Completo com Louça", 15),
         ("Completo Descartável", 8),
     ]
-    
-    peso_fornos_traseira = 0
-    qtd_fornos = {}
-    
     for nome, peso in FORNOS:
-        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_traseira"):
-            qtd = st.number_input("Qtd", min_value=0, max_value=3, step=1, key=f"qtd_{nome}_traseira")
-            qtd_fornos[nome] = qtd
-            peso_fornos_traseira += qtd * peso
-    
-    st.metric("Peso Fornos Traseiros", f"{peso_fornos_traseira} kg")
-    num_grandes = qtd_grande_vazio + qtd_grande_louca_sc + qtd_grande_louca_cc + qtd_grande_desc
-    num_pequenos = qtd_peq_vazio + qtd_peq_louca_cc + qtd_peq_desc
+        if st.checkbox(f"{nome} ({peso}kg)", key=f"chk_{nome}_forno_traseira"):
+            qtd = st.number_input("Qtd", min_value=0, max_value=3, step=1, key=f"qtd_{nome}_forno_traseira")
+            peso_traseira += qtd * peso
 
-    if permitir_um_pequeno:
-        espacos_traseira = num_grandes + (num_pequenos / 2)
-    else:
-        espacos_traseira = num_grandes + (num_pequenos // 2)
-
-    if espacos_traseira > 5:
+    if espacos_traseira > limite_espacos_traseira:
         st.error("Galley Traseira suporta no máximo 5 espaços.")
         peso_traseira = 0
-    else:
-        peso_traseira = (
-            qtd_grande_vazio * 27 +
-            qtd_grande_louca_sc * 64 +
-            qtd_grande_louca_cc * 81 +
-            qtd_grande_desc * 60 +
-            qtd_peq_vazio * 15 +
-            qtd_peq_louca_cc * 44 +
-            qtd_peq_desc * 30 +
-            sum(FORNO_PESOS[f] for f in fornos_traseira)
-        )
 
     st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
 
     # --- Total ---
     total_galleys = peso_dianteira + peso_pr + peso_traseira
     st.success(f"**Total das Galleys: {total_galleys} kg**")
+
 
 
 # --- Rodapé ---
