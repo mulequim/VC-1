@@ -138,18 +138,36 @@ with tab3:
 
     # --- Galley Dianteira ---
     st.markdown("### Galley Dianteira")
-    qtd_grande_dianteira = st.number_input("Trolleys Grandes (27-81kg)", min_value=0, max_value=2, step=1, key="galley_dianteira_grande")
-    qtd_pequeno_dianteira = st.number_input("Trolleys Pequenos (15-44kg)", min_value=0, max_value=4, step=1, key="galley_dianteira_pequeno")
-    forno_dianteira = st.selectbox("Forno Dianteira", options=["Nenhum"] + list(FORNO_PESOS.keys()), key="galley_dianteira_forno")
-
-    espacos_dianteira = qtd_grande_dianteira + (qtd_pequeno_dianteira // 2)
-    if espacos_dianteira > 2 or (qtd_pequeno_dianteira % 2 != 0):
-        st.error("Galley Dianteira suporta no máximo 2 espaços (2 grandes ou 4 pequenos, ou 1 grande + 2 pequenos).")
+    limite_espacos = 2
+    
+    # Inicialização
+    espacos_usados = 0
+    peso_dianteira = 0
+    
+    # Trolley Grande Louça s/Comissaria
+    if st.checkbox("Grande Louça s/Comissaria (64kg)", key="chk_grande_louca_sc"):
+        qtd = st.number_input("Qtd", min_value=0, max_value=2, step=1, key="qtd_grande_louca_sc")
+        espacos_usados += qtd
+        peso_dianteira += qtd * 64
+    
+    # Trolley Pequeno Louça c/Comissaria
+    if st.checkbox("Pequeno Louça c/Comissaria (44kg)", key="chk_peq_louca_cc"):
+        qtd = st.number_input("Qtd", min_value=0, max_value=4, step=1, key="qtd_peq_louca_cc")
+        espacos_usados += (qtd // 2)  # cada 2 pequenos = 1 espaço
+        if qtd % 2 != 0 and st.checkbox("Permitir espaço com apenas 1 pequeno", key="chk_um_pequeno_dianteira"):
+            espacos_usados += 0.5
+        peso_dianteira += qtd * 44
+    
+    # Forno
+    forno_dianteira = st.selectbox("Forno Dianteira", options=["Nenhum"] + list(FORNO_PESOS.keys()), key="forno_dianteira")
+    if forno_dianteira != "Nenhum":
+        peso_dianteira += FORNO_PESOS[forno_dianteira]
+    
+    # Validação
+    if espacos_usados > limite_espacos:
+        st.error("Galley Dianteira suporta no máximo 2 espaços.")
         peso_dianteira = 0
-    else:
-        peso_dianteira = (qtd_grande_dianteira * 64) + (qtd_pequeno_dianteira * 44)  # exemplo com pesos médios
-        if forno_dianteira != "Nenhum":
-            peso_dianteira += FORNO_PESOS[forno_dianteira]
+    
     st.metric("Peso Galley Dianteira", f"{peso_dianteira} kg")
 
     # --- Galley PR ---
