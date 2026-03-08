@@ -55,23 +55,29 @@ with tab2:
     
     # Tanque 01
     check01 = st.checkbox("Tanque 01 Cheio (200L)", True)
-    porc01 = st.slider("Porcentagem Tanque 01", 0, 100, 100) if not check01 else 100
+    if not check01:
+        porc01 = st.slider("Porcentagem Tanque 01", 0, 100, 100, key="p1")
+    else:
+        porc01 = 100
     
-    # Tanque 02 - Só habilita se check01 estiver marcado
+    # Tanque 02 - Só habilita se Tanque 01 estiver ativo
     if check01:
         check02 = st.checkbox("Tanque 02 Cheio (170L)", False)
-        porc02 = st.slider("Porcentagem Tanque 02", 0, 100, 100) if not check02 else 100
+        if not check02:
+            porc02 = st.slider("Porcentagem Tanque 02", 0, 100, 100, key="p2")
+        else:
+            porc02 = 100
     else:
-        st.warning("Tanque 01 deve estar ativo para gerenciar o Tanque 02.")
+        st.warning("Tanque 01 deve estar ativo.")
         check02 = False
         porc02 = 0
     
+    # O cálculo aqui abaixo acontece automaticamente a cada mudança
     res = calcular_agua(check01, porc01, check02, porc02)
     
     st.write("---")
     st.metric("Total Água", f"{res['total']:.1f} L")
     st.metric("Nível Global", f"{res['porc_total']:.1f}%")
     st.metric("Tempo de Chuveiro", f"{res['tempo']:.1f} min")
-
 st.markdown("---")
 st.caption("Software não oficial desenvolvido por 2S MIGUEL.")
