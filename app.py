@@ -157,19 +157,20 @@ with tab3:
     peso_pr = st.number_input("Peso manual (kg)", min_value=0, step=1, key="galley_pr_peso")
     st.metric("Peso Galley PR", f"{peso_pr} kg")
 
-   # --- Galley Traseira ---
     st.markdown("### Galley Traseira")
-    
-    # Inputs por tipo de trolley grande
+
+    # Inputs por tipo de trolley
     qtd_grande_vazio = st.number_input("Trolley Grande Vazio (27kg)", min_value=0, max_value=5, step=1)
     qtd_grande_louca_sc = st.number_input("Trolley Grande com Louça s/Comissaria (64kg)", min_value=0, max_value=5, step=1)
     qtd_grande_louca_cc = st.number_input("Trolley Grande com Louça c/Comissaria (81kg)", min_value=0, max_value=5, step=1)
     qtd_grande_desc = st.number_input("Trolley Grande com Material Descartável c/Comissaria (60kg)", min_value=0, max_value=5, step=1)
     
-    # Inputs por tipo de trolley pequeno
     qtd_peq_vazio = st.number_input("Trolley Pequeno Vazio (15kg)", min_value=0, max_value=10, step=1)
     qtd_peq_louca_cc = st.number_input("Trolley Pequeno com Louça c/Comissaria (44kg)", min_value=0, max_value=10, step=1)
     qtd_peq_desc = st.number_input("Trolley Pequeno com Material Descartável c/Comissaria (30kg)", min_value=0, max_value=10, step=1)
+    
+    # Checkbox para permitir espaço com apenas 1 pequeno
+    permitir_um_pequeno = st.checkbox("Permitir espaço com apenas 1 trolley pequeno")
     
     # Fornos
     fornos_traseira = st.multiselect(
@@ -181,10 +182,15 @@ with tab3:
     # Cálculo de espaços
     num_grandes = qtd_grande_vazio + qtd_grande_louca_sc + qtd_grande_louca_cc + qtd_grande_desc
     num_pequenos = qtd_peq_vazio + qtd_peq_louca_cc + qtd_peq_desc
-    espacos_usados = num_grandes + (num_pequenos // 2)
     
-    if espacos_usados > 5 or (num_pequenos % 2 != 0):
-        st.error("Galley Traseira suporta no máximo 5 espaços (5 grandes ou 10 pequenos, ou combinações equivalentes).")
+    if permitir_um_pequeno:
+        espacos_usados = num_grandes + (num_pequenos / 2)  # aceita meio espaço
+    else:
+        espacos_usados = num_grandes + (num_pequenos // 2)
+    
+    # Validação
+    if espacos_usados > 5:
+        st.error("Galley Traseira suporta no máximo 5 espaços.")
         peso_traseira = 0
     else:
         peso_traseira = (
@@ -199,6 +205,7 @@ with tab3:
         )
     
     st.metric("Peso Galley Traseira", f"{peso_traseira} kg")
+
 
 
     # --- Total ---
