@@ -42,13 +42,11 @@ try:
         salvar_contador(contador, sha)
         st.session_state.ja_contou = True
 
-    st.success(f"🚀 Este sistema já auxiliou em {contador} acessos no total!")
+    st.success(f"🚀 Este sistema já foi utilizado: {contador} acessos no total!")
 
 except Exception as e:
     st.error("⚠️ Não foi possível atualizar o contador. Verifique o token ou permissões.")
     st.write(e)
-
-st.success(f"🚀 Este sistema já auxiliou em {contador} acessos no total!")
 
 # =========================
 # Funções de Cálculo Porta VC-1
