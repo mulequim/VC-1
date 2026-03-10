@@ -1,36 +1,54 @@
 import streamlit as st
-import os
+import requests, base64
 
-CONTADOR_FILE = "contador.txt"
+# Token seguro via st.secrets
+GITHUB_TOKEN = st.secrets["GITHUB_TOKEN"]
+
+# Configurações do repositório
+REPO = "mulequim/VC-1"
+FILE_PATH = "contador.txt"
+API_URL = f"https://api.github.com/repos/{REPO}/contents/{FILE_PATH}"
 
 # Função para ler o contador
 def ler_contador():
-    if not os.path.exists(CONTADOR_FILE):
-        return 0
-    with open(CONTADOR_FILE, "r") as f:
-        try:
-            return int(f.read().strip())
-        except:
-            return 0
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    resp = requests.get(API_URL, headers=headers)
+    resp.raise_for_status()  # lança erro se a requisição falhar
+    data = resp.json()
+    valor = int(base64.b64decode(data["content"]).decode().strip())
+    return valor, data["sha"]
 
 # Função para salvar o contador
-def salvar_contador(valor):
-    with open(CONTADOR_FILE, "w") as f:
-        f.write(str(valor))
+def salvar_contador(valor, sha):
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    novo_conteudo = str(valor)
+    update_data = {
+        "message": f"Atualizando contador para {valor}",
+        "content": base64.b64encode(novo_conteudo.encode()).decode(),
+        "sha": sha
+    }
+    resp = requests.put(API_URL, headers=headers, json=update_data)
+    resp.raise_for_status()
 
-# Inicializa flag de sessão
+# Controle de sessão
 if "ja_contou" not in st.session_state:
     st.session_state.ja_contou = False
 
-# Se ainda não contou nesta sessão, soma +1
-if not st.session_state.ja_contou:
-    contador = ler_contador()
-    contador += 1
-    salvar_contador(contador)
-    st.session_state.ja_contou = True
-else:
-    contador = ler_contador()
+try:
+    contador, sha = ler_contador()
 
+    if not st.session_state.ja_contou:
+        contador += 1
+        salvar_contador(contador, sha)
+        st.session_state.ja_contou = True
+
+    st.success(f"🚀 Este sistema já auxiliou em {contador} acessos no total!")
+
+except Exception as e:
+    st.error("⚠️ Não foi possível atualizar o contador. Verifique o token ou permissões.")
+    st.write(e)
+
+st.success(f"🚀 Este sistema já auxiliou em {contador} acessos no total!")
 
 # =========================
 # Funções de Cálculo Porta VC-1
