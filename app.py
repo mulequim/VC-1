@@ -1,4 +1,36 @@
 import streamlit as st
+import os
+
+CONTADOR_FILE = "contador.txt"
+
+# Função para ler o contador
+def ler_contador():
+    if not os.path.exists(CONTADOR_FILE):
+        return 0
+    with open(CONTADOR_FILE, "r") as f:
+        try:
+            return int(f.read().strip())
+        except:
+            return 0
+
+# Função para salvar o contador
+def salvar_contador(valor):
+    with open(CONTADOR_FILE, "w") as f:
+        f.write(str(valor))
+
+# Inicializa flag de sessão
+if "ja_contou" not in st.session_state:
+    st.session_state.ja_contou = False
+
+# Se ainda não contou nesta sessão, soma +1
+if not st.session_state.ja_contou:
+    contador = ler_contador()
+    contador += 1
+    salvar_contador(contador)
+    st.session_state.ja_contou = True
+else:
+    contador = ler_contador()
+
 
 # =========================
 # Funções de Cálculo Porta VC-1
